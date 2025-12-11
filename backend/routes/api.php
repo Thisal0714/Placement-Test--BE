@@ -8,7 +8,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
-// Role endpoints (explicit routes to mirror AuthController style)
+// Role endpoints
 Route::get('/roles', [RoleController::class, 'index']);
 Route::post('/roles', [RoleController::class, 'create']);
 Route::get('/roles/{id}', [RoleController::class, 'show']);
