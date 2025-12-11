@@ -1,0 +1,14 @@
+vendor/
+node_modules/
+.env
+.env.*
+.idea/
+.vscode/
+.git/
+storage/framework/cache/data/
+storage/logs/
+storage/debugbar/
+tests/
+npm-debug.log
+yarn-error.log
+composer.lock
