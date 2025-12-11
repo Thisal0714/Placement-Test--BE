@@ -9,7 +9,7 @@ COPY . .
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
 
-FROM php:8.1-cli
+FROM php:8.2-cli
 
 # Install system dependencies + PHP extensions
 RUN apt-get update \
