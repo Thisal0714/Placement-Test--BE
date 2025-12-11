@@ -12,18 +12,23 @@ RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoload
 FROM php:8.1-cli
 
 # Install system dependencies + PHP extensions
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    git \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    libonig-dev \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        pkg-config \
+        libxml2-dev \
+        libpq-dev \
+        libzip-dev \
+        zip \
+        unzip \
+        git \
+        libpng-dev \
+        libjpeg62-turbo-dev \
+        libfreetype6-dev \
+        libonig-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_pgsql mbstring xml zip bcmath
+    && docker-php-ext-install gd pdo pdo_pgsql mbstring xml zip bcmath \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www/html
 
