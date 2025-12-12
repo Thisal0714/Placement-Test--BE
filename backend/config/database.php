@@ -33,7 +33,10 @@ return [
 
         'pgsql' => [
             'driver' => 'pgsql',
-            'url' => env('DB_URL'),
+            // Support either `DATABASE_URL` (common in hosting platforms) or
+            // `DB_URL` (legacy in this project). `env()` fallback gives
+            // priority to `DATABASE_URL` when both are present.
+            'url' => env('DATABASE_URL', env('DB_URL')),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'laravel'),

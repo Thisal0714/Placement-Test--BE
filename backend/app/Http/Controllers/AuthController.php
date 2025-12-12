@@ -26,9 +26,12 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:255',
+            // Require first and last name explicitly (no `name` field used).
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
+            'role_id' => 'nullable|uuid',
         ]);
         if (User::where('email', $data['email'])->exists()) {
             return response()->json([
@@ -38,6 +41,10 @@ class AuthController extends Controller
         }
 
             try {
+                if (!array_key_exists('role_id', $data)) {
+                    $data['role_id'] = null;
+                }
+
                 $user = $this->signupService->register($data);
             } catch (QueryException $e) {
                 $sqlState = $e->errorInfo[0] ?? null;
@@ -55,7 +62,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'User created successfully',
-            'user' => $user->only(['id','name','email']),
+            'user' => $user->only(['id','first_name','last_name','email']),
         ], 201);
     }
 
@@ -75,7 +82,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'User signed in successfully',
             'token' => $res['token'],
-            'user' => $res['user']->only(['id','name','email']),
+            'user' => $res['user']->only(['id','first_name','last_name','email']),
         ]);
     }
 
