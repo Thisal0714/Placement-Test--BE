@@ -17,15 +17,17 @@ class SignupService
     /**
      * Register a new user and return the created User.
      *
-     * @param array $data ['name','email','password']
+        * @param array $data ['first_name','last_name','email','password','role_id']
      * @return User
      */
     public function register(array $data): User
     {
         $user = User::create([
-            'name' => $data['name'],
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'role_id' => $data['role_id'],
         ]);
 
         return $user;
