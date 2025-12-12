@@ -15,9 +15,9 @@ class LoginService
     }
 
     /**
-     * Attempt login and return token + user on success.
+     * Attempt login and return token + user and role_id on success.
      *
-     * @return array{token:string,user:User}
+     * @return array{token:string,user:User,role_id:?string}
      */
     public function login(string $email, string $password): array
     {
@@ -28,6 +28,6 @@ class LoginService
 
         $token = $this->jwt->generate(['sub' => $user->id, 'email' => $user->email]);
 
-        return ['token' => $token, 'user' => $user];
+        return ['token' => $token, 'user' => $user, 'role_id' => $user->role_id];
     }
 }

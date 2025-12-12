@@ -3,35 +3,48 @@
 namespace App\Http\Controllers;
 
 use App\Models\Role;
+use App\Services\RoleService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\ValidationException;
 
 class RoleController extends Controller
 {
+    protected RoleService $roleService;
+
+    public function __construct(RoleService $roleService)
+    {
+        $this->roleService = $roleService;
+    }
+
     public function index()
     {
-        $roles = Role::all();
+        $roles = $this->roleService->list();
         return response()->json(['roles' => $roles]);
     }
 
     public function show($id)
     {
-        $role = Role::find($id);
-        if (! $role) {
+        try {
+            $role = $this->roleService->get($id);
+        } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Role not found'], 404);
         }
+
         return response()->json(['role' => $role]);
     }
 
     public function create(Request $request)
     {
-        $data = $request->validate([
-            'role_name' => 'required|string|max:255|unique:roles,role_name',
-        ]);
-
         try {
-            $role = Role::create($data);
+            $role = $this->roleService->create($request->all());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (QueryException $e) {
             $sqlState = $e->errorInfo[0] ?? null;
             if ($sqlState === '23505') {
@@ -48,22 +61,20 @@ class RoleController extends Controller
         return response()->json([
             'message' => 'Role created successfully',
             'role' => $role,
-        ], 201);
+        ], 200);
     }
 
     public function update(Request $request, $id)
     {
-        $role = Role::find($id);
-        if (! $role) {
-            return response()->json(['message' => 'Role not found'], 404);
-        }
-
-        $data = $request->validate([
-            'role_name' => 'required|string|max:255|unique:roles,role_name,' . $id . ',id',
-        ]);
-
         try {
-            $role->update($data);
+            $role = $this->roleService->update($id, $request->all());
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Role not found'], 404);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (QueryException $e) {
             $sqlState = $e->errorInfo[0] ?? null;
             if ($sqlState === '23505') {
@@ -85,17 +96,14 @@ class RoleController extends Controller
 
     public function delete($id)
     {
-        $role = Role::find($id);
-        if (! $role) {
-            return response()->json(['message' => 'Role not found'], 404);
-        }
-
         try {
-            $role->delete();
+            $this->roleService->delete($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Role not found'], 404);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Could not delete role'], 500);
         }
 
-        return response()->json(['message' => 'Role deleted'], 204);
+        return response()->json(['message' => 'Role deleted'], 200);
     }
 }
