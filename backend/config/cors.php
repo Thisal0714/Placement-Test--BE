@@ -7,7 +7,7 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'https://placement-test-thisal.vercel.app/',
+        'https://placement-test-thisal.vercel.app',
         'http://localhost:3000',
     ],
 
