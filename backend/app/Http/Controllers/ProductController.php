@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\ProductService;
+use App\Services\FirebaseService;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -11,10 +12,12 @@ use Illuminate\Validation\ValidationException;
 class ProductController extends Controller
 {
     protected ProductService $productService;
+    protected FirebaseService $firebaseService;
 
-    public function __construct(ProductService $productService)
+    public function __construct(ProductService $productService, FirebaseService $firebaseService)
     {
         $this->productService = $productService;
+        $this->firebaseService = $firebaseService;
     }
 
     public function index()
@@ -37,7 +40,12 @@ class ProductController extends Controller
     public function create(Request $request)
     {
         try {
-            $product = $this->productService->create($request->all());
+            $data = $request->all();
+            if ($request->hasFile('image')) {
+                $data['image_url'] = $this->firebaseService->upload($request->file('image'));
+            }
+
+            $product = $this->productService->create($data);
         } catch (ValidationException $e) {
             return $this->errorResponse('Validation failed', $e->errors(), 422);
         } catch (QueryException $e) {
@@ -50,7 +58,12 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $product = $this->productService->update($id, $request->all());
+            $data = $request->all();
+            if ($request->hasFile('image')) {
+                $data['image_url'] = $this->firebaseService->upload($request->file('image'));
+            }
+
+            $product = $this->productService->update($id, $data);
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse('Product not found', null, 404);
         } catch (ValidationException $e) {
