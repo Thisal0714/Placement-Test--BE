@@ -39,17 +39,13 @@ COPY . .
 # Copy vendor from composer stage
 COPY --from=composer /app/vendor ./vendor
 
-# Copy Firebase JSON secret into container
-COPY secrets /var/www/html/secrets
-
 # Fix permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
 # Environment variables
 ENV APP_ENV=production
-ENV GOOGLE_APPLICATION_CREDENTIALS=/var/www/html/secrets/photoapp-firebase-adminsdk-fbsvc-2b88adedf1.json
-ENV FIREBASE_STORAGE_BUCKET=placement-test-8e39f.appspot.com
+ENV FIREBASE_STORAGE_BUCKET=photoapp-71ba5.firebasestorage.app
 
 # Expose port
 EXPOSE 8000
