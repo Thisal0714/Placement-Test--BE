@@ -1,8 +1,7 @@
-
 FROM composer:2 AS composer
 WORKDIR /app
 
-# Copy the entire project (to let composer see the full structure)
+# Copy composer files first for caching
 COPY composer.json composer.lock ./
 COPY . .
 
@@ -42,10 +41,9 @@ COPY --from=composer /app/vendor ./vendor
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
-# Set environment
 ENV APP_ENV=production
 
 EXPOSE 8000
 
-# Start Laravel server
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Run migrations then start server
+CMD sh -c "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"
