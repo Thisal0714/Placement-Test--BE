@@ -34,10 +34,7 @@ class AuthController extends Controller
             'role_id' => 'nullable|uuid',
         ]);
         if (User::where('email', $data['email'])->exists()) {
-            return response()->json([
-                'message' => 'Email already registered',
-                'errors' => ['email' => ['The email address is already in use.']],
-            ], 409);
+            return $this->errorResponse('Email already registered', ['email' => ['The email address is already in use.']], 409);
         }
 
             try {
@@ -49,21 +46,15 @@ class AuthController extends Controller
             } catch (QueryException $e) {
                 $sqlState = $e->errorInfo[0] ?? null;
                 if ($sqlState === '23505') {
-                    return response()->json([
-                        'message' => 'Email already registered',
-                        'errors' => ['email' => ['The email address is already in use.']],
-                    ], 409);
+                    return $this->errorResponse('Email already registered', ['email' => ['The email address is already in use.']], 409);
                 }
 
-                return response()->json(['message' => 'Could not create user'], 500);
+                return $this->errorResponse('Could not create user', null, 500);
             } catch (\Exception $e) {
-                return response()->json(['message' => 'Could not create user'], 500);
+                return $this->errorResponse('Could not create user', null, 500);
             }
 
-        return response()->json([
-            'message' => 'User created successfully',
-            'user' => $user->only(['id','first_name','last_name','email','role_id']),
-        ], 200);
+        return $this->successResponse(['user' => $user->only(['id','first_name','last_name','email','role_id'])], 'User created successfully');
     }
 
     public function login(Request $request)
@@ -76,34 +67,30 @@ class AuthController extends Controller
         try {
             $res = $this->loginService->login($data['email'], $data['password']);
         } catch (\RuntimeException $e) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return $this->errorResponse('Invalid credentials', null, 401);
         }
 
-        return response()->json([
-            'message' => 'User signed in successfully',
-            'token' => $res['token'],
-            'user' => $res['user']->only(['id','first_name','last_name','email','role_id']),
-        ]);
+        return $this->successResponse(['token' => $res['token'], 'user' => $res['user']->only(['id','first_name','last_name','email','role_id'])], 'User signed in successfully');
     }
 
     public function logout(Request $request)
     {
         $auth = $request->header('Authorization');
         if (!$auth || !str_starts_with($auth, 'Bearer ')) {
-            return response()->json(['message' => 'Authorization token required'], 400);
+            return $this->errorResponse('Authorization token required', null, 400);
         }
 
         $token = trim(substr($auth, 7));
         try {
             $payload = $this->jwt->decode($token);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Invalid token'], 400);
+            return $this->errorResponse('Invalid token', null, 400);
         }
 
         $jti = $payload['jti'] ?? null;
         $exp = $payload['exp'] ?? null;
         if (!$jti || !$exp) {
-            return response()->json(['message' => 'Invalid token payload'], 400);
+            return $this->errorResponse('Invalid token payload', null, 400);
         }
 
         DB::table('jwt_revocations')->insert([
@@ -111,6 +98,6 @@ class AuthController extends Controller
             'expires_at' => date('Y-m-d H:i:s', $exp),
         ]);
 
-        return response()->json(['message' => 'Logged out']);
+        return $this->successResponse(null, 'Logged out');
     }
 }

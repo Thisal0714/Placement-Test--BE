@@ -21,7 +21,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = $this->productService->list();
-        return response()->json(['products' => $products]);
+        return $this->successResponse(['products' => $products]);
     }
 
     public function show($id)
@@ -29,10 +29,10 @@ class ProductController extends Controller
         try {
             $product = $this->productService->get($id);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Product not found'], 404);
+            return $this->errorResponse('Product not found', null, 404);
         }
 
-        return response()->json(['product' => $product]);
+        return $this->successResponse(['product' => $product]);
     }
 
     public function create(Request $request)
@@ -40,12 +40,12 @@ class ProductController extends Controller
         try {
             $product = $this->productService->create($request->all());
         } catch (ValidationException $e) {
-            return response()->json(['message' => 'Validation failed', 'errors' => $e->errors()], 422);
+            return $this->errorResponse('Validation failed', $e->errors(), 422);
         } catch (QueryException $e) {
-            return response()->json(['message' => 'Could not create product'], 500);
+            return $this->errorResponse('Could not create product', null, 500);
         }
 
-        return response()->json(['message' => 'Product created successfully', 'product' => $product], 200);
+        return $this->successResponse(['product' => $product], 'Product created successfully');
     }
 
     public function update(Request $request, $id)
@@ -53,14 +53,14 @@ class ProductController extends Controller
         try {
             $product = $this->productService->update($id, $request->all());
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Product not found'], 404);
+            return $this->errorResponse('Product not found', null, 404);
         } catch (ValidationException $e) {
-            return response()->json(['message' => 'Validation failed', 'errors' => $e->errors()], 422);
+            return $this->errorResponse('Validation failed', $e->errors(), 422);
         } catch (QueryException $e) {
-            return response()->json(['message' => 'Could not update product'], 500);
+            return $this->errorResponse('Could not update product', null, 500);
         }
 
-        return response()->json(['message' => 'Product updated successfully', 'product' => $product]);
+        return $this->successResponse(['product' => $product], 'Product updated successfully');
     }
 
     public function delete($id)
@@ -68,11 +68,11 @@ class ProductController extends Controller
         try {
             $this->productService->delete($id);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Product not found'], 404);
+            return $this->errorResponse('Product not found', null, 404);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Could not delete product'], 500);
+            return $this->errorResponse('Could not delete product', null, 500);
         }
 
-        return response()->json(['message' => 'Product deleted'], 200);
+        return $this->successResponse(null, 'Product deleted');
     }
 }
