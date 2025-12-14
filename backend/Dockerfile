@@ -1,3 +1,4 @@
+# Stage 1: Composer dependencies
 FROM composer:2 AS composer
 WORKDIR /app
 
@@ -7,7 +8,7 @@ COPY . .
 
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
-
+# Stage 2: PHP runtime
 FROM php:8.2-cli
 
 # Install system dependencies + PHP extensions
@@ -29,6 +30,7 @@ RUN apt-get update \
     && docker-php-ext-install gd pdo pdo_pgsql mbstring xml zip bcmath \
     && rm -rf /var/lib/apt/lists/*
 
+# Set working directory
 WORKDIR /var/www/html
 
 # Copy application code
@@ -37,12 +39,19 @@ COPY . .
 # Copy vendor from composer stage
 COPY --from=composer /app/vendor ./vendor
 
+# Copy Firebase JSON secret into container
+COPY secrets /var/www/html/secrets
+
 # Fix permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
+# Environment variables
 ENV APP_ENV=production
+ENV GOOGLE_APPLICATION_CREDENTIALS=/var/www/html/secrets/photoapp-firebase-adminsdk-fbsvc-2b88adedf1.json
+ENV FIREBASE_STORAGE_BUCKET=placement-test-8e39f.appspot.com
 
+# Expose port
 EXPOSE 8000
 
 # Run migrations then start server
