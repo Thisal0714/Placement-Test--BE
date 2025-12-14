@@ -68,7 +68,6 @@ class JwtService
     protected function verify(string $data, string $signature): bool
     {
         $expected = $this->sign($data);
-        // timing safe compare
         return hash_equals($expected, $signature);
     }
 
