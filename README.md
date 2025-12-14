@@ -26,3 +26,13 @@ This'll create both CUSTOMER and ADMIN Logins Locally.
   "email": "test@example.com",
   "password": "password"
  }
+
+
+ ***** Full Project is deployed, Backend on Render, PostgreSQL DB on Render and Frontend on Vercel.
+ https://placement-test-thisal.vercel.app/   Check it out!
+
+  }
+  "email": "thisaldev@gmail.com",
+  "password": "Thisal123"
+  }
+ 
