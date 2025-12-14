@@ -22,7 +22,7 @@ class RoleController extends Controller
     public function index()
     {
         $roles = $this->roleService->list();
-        return response()->json(['roles' => $roles]);
+        return $this->successResponse(['roles' => $roles]);
     }
 
     public function show($id)
@@ -30,10 +30,10 @@ class RoleController extends Controller
         try {
             $role = $this->roleService->get($id);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Role not found'], 404);
+            return $this->errorResponse('Role not found', null, 404);
         }
 
-        return response()->json(['role' => $role]);
+        return $this->successResponse(['role' => $role]);
     }
 
     public function create(Request $request)
@@ -41,27 +41,18 @@ class RoleController extends Controller
         try {
             $role = $this->roleService->create($request->all());
         } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->errorResponse('Validation failed', $e->errors(), 422);
         } catch (QueryException $e) {
             $sqlState = $e->errorInfo[0] ?? null;
             if ($sqlState === '23505') {
-                return response()->json([
-                    'message' => 'Role already exists',
-                    'errors' => ['role_name' => ['The role name is already in use.']],
-                ], 409);
+                return $this->errorResponse('Role already exists', ['role_name' => ['The role name is already in use.']], 409);
             }
-            return response()->json(['message' => 'Could not create role'], 500);
+            return $this->errorResponse('Could not create role', null, 500);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Could not create role'], 500);
+            return $this->errorResponse('Could not create role', null, 500);
         }
 
-        return response()->json([
-            'message' => 'Role created successfully',
-            'role' => $role,
-        ], 200);
+        return $this->successResponse(['role' => $role], 'Role created successfully');
     }
 
     public function update(Request $request, $id)
@@ -69,29 +60,20 @@ class RoleController extends Controller
         try {
             $role = $this->roleService->update($id, $request->all());
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Role not found'], 404);
+            return $this->errorResponse('Role not found', null, 404);
         } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->errorResponse('Validation failed', $e->errors(), 422);
         } catch (QueryException $e) {
             $sqlState = $e->errorInfo[0] ?? null;
             if ($sqlState === '23505') {
-                return response()->json([
-                    'message' => 'Role name already in use',
-                    'errors' => ['role_name' => ['The role name is already in use.']],
-                ], 409);
+                return $this->errorResponse('Role name already in use', ['role_name' => ['The role name is already in use.']], 409);
             }
-            return response()->json(['message' => 'Could not update role'], 500);
+            return $this->errorResponse('Could not update role', null, 500);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Could not update role'], 500);
+            return $this->errorResponse('Could not update role', null, 500);
         }
 
-        return response()->json([
-            'message' => 'Role updated successfully',
-            'role' => $role,
-        ]);
+        return $this->successResponse(['role' => $role], 'Role updated successfully');
     }
 
     public function delete($id)
@@ -99,11 +81,11 @@ class RoleController extends Controller
         try {
             $this->roleService->delete($id);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Role not found'], 404);
+            return $this->errorResponse('Role not found', null, 404);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Could not delete role'], 500);
+            return $this->errorResponse('Could not delete role', null, 500);
         }
 
-        return response()->json(['message' => 'Role deleted'], 200);
+        return $this->successResponse(null, 'Role deleted');
     }
 }

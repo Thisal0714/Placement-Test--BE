@@ -11,13 +11,13 @@ class UserController extends Controller
     public function userList()
     {
         $users = User::with('role')->get();
-        return response()->json($users);
+        return $this->successResponse(['users' => $users]);
     }
 
     public function show($id)
     {
         $user = User::with('role')->findOrFail($id);
-        return response()->json($user);
+        return $this->successResponse(['user' => $user]);
     }
 
     public function update(Request $request, $id)
@@ -38,7 +38,7 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return response()->json($user->load('role'));
+        return $this->successResponse(['user' => $user->load('role')], 'User updated successfully');
     }
 
     public function delete($id)
@@ -46,6 +46,6 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $user->delete();
 
-        return response()->json(['message' => 'User deleted successfully']);
+        return $this->successResponse(null, 'User deleted successfully');
     }
 }
